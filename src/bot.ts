@@ -1,4 +1,5 @@
 import { Client, GatewayIntentBits, Events, Partials, Message } from 'discord.js';
+import { createServer } from 'http';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -84,5 +85,14 @@ if (!token) {
   console.error('❌ Error: DISCORD_BOT_TOKEN is not defined in .env file');
   process.exit(1);
 }
+
+// Health check server for Railway
+const port = process.env.PORT || 3000;
+createServer((req, res) => {
+  res.writeHead(200);
+  res.end('OK');
+}).listen(port, () => {
+  console.log(`🏥 Health check server listening on port ${port}`);
+});
 
 client.login(token);

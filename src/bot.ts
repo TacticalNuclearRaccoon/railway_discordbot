@@ -79,20 +79,20 @@ client.on(Events.MessageCreate, async (message: Message) => {
   }
 });
 
+// Health check server for Railway — must bind to 0.0.0.0 and start early
+const port = parseInt(process.env.PORT || '3000', 10);
+createServer((req, res) => {
+  res.writeHead(200);
+  res.end('OK');
+}).listen(port, '0.0.0.0', () => {
+  console.log(`🏥 Health check server listening on 0.0.0.0:${port}`);
+});
+
 const token = process.env.DISCORD_BOT_TOKEN;
 
 if (!token) {
   console.error('❌ Error: DISCORD_BOT_TOKEN is not defined in .env file');
   process.exit(1);
 }
-
-// Health check server for Railway
-const port = process.env.PORT || 3000;
-createServer((req, res) => {
-  res.writeHead(200);
-  res.end('OK');
-}).listen(port, () => {
-  console.log(`🏥 Health check server listening on port ${port}`);
-});
 
 client.login(token);

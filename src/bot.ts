@@ -1,6 +1,12 @@
-import { Client, GatewayIntentBits, Events, Partials, Message } from 'discord.js';
-import { createServer } from 'http';
-import dotenv from 'dotenv';
+import {
+  Client,
+  GatewayIntentBits,
+  Events,
+  Partials,
+  Message,
+} from "discord.js";
+import { createServer } from "http";
+import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -10,8 +16,9 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
   ],
-  partials: [Partials.Channel]
+  partials: [Partials.Channel],
 });
 
 client.once(Events.ClientReady, (c) => {
@@ -19,79 +26,87 @@ client.once(Events.ClientReady, (c) => {
 });
 
 client.on(Events.MessageCreate, async (message: Message) => {
-  if (message.author.bot) return; 
+  if (message.author.bot) return;
 
   if (message.channel.isDMBased()) {
-    console.log(`📩 Received DM from ${message.author.tag}: ${message.content}`);
-    
+    console.log(
+      `📩 Received DM from ${message.author.tag}: ${message.content}`,
+    );
+
     try {
       const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
       if (N8N_WEBHOOK_URL) {
         const body = {
-          type: 'direct_message',
+          type: "direct_message",
           userId: message.author.id,
-          message: message.content
+          message: message.content,
         };
 
         await fetch(N8N_WEBHOOK_URL, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
         });
       } else {
-        console.warn('ON_DIRECT_MESSAGE_RECEIVED_URL is not defined in environment.');
+        console.warn(
+          "ON_DIRECT_MESSAGE_RECEIVED_URL is not defined in environment.",
+        );
       }
 
       console.log(`✉️ Replied to ${message.author.tag}`);
     } catch (error) {
-      console.error('❌ Error sending reply:', error);
+      console.error("❌ Error sending reply:", error);
     }
   } else if (message.mentions.has(client.user!.id)) {
-    console.log(`💬 Mentioned in channel by ${message.author.tag}: ${message.content}`);
+    console.log(
+      `💬 Mentioned in channel by ${message.author.tag}: ${message.content}`,
+    );
 
     const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
     if (N8N_WEBHOOK_URL) {
       const body = {
-        type: 'channel_mention',
+        type: "channel_mention",
         userId: message.author.id,
         message: message.content,
         channelId: message.channel.id,
       };
 
       await fetch(N8N_WEBHOOK_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
     } else {
-      console.warn('ON_DIRECT_MESSAGE_RECEIVED_URL is not defined in environment.');
+      console.warn(
+        "ON_DIRECT_MESSAGE_RECEIVED_URL is not defined in environment.",
+      );
     }
-    
+
     try {
       console.log(`✉️ Replied to ${message.author.tag} in channel`);
     } catch (error) {
-      console.error('❌ Error sending reply:', error);
+      console.error("❌ Error sending reply:", error);
     }
   }
 });
 
 // Health check server for Railway — must bind to 0.0.0.0 and start early
-const port = parseInt(process.env.PORT || '3000', 10);
+const port = parseInt(process.env.PORT || "3000", 10);
 createServer((req, res) => {
   res.writeHead(200);
-  res.end('OK');
-}).listen(port, '0.0.0.0', () => {
+  res.end("OK");
+}).listen(port, "0.0.0.0", () => {
   console.log(`🏥 Health check server listening on 0.0.0.0:${port}`);
 });
 
 const token = process.env.DISCORD_BOT_TOKEN;
 
 if (!token) {
-  console.error('❌ Error: DISCORD_BOT_TOKEN is not defined in .env file');
+  console.error("❌ Error: DISCORD_BOT_TOKEN is not defined in .env file");
   process.exit(1);
 }
 
